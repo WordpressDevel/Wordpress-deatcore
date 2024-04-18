@@ -18,11 +18,34 @@
  * @package WordPress
  */
 
-/** @desc this loads the composer autoload file */
-require_once dirname( __DIR__ ) . '/Wordpress-deatcore/vendor/autoload.php';
-/** @desc this instantiates Dotenv and passes in our path to .env */
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__). '/Wordpress-deatcore/');
-$dotenv->load();
+ use Dotenv\Dotenv;
+
+ // Try to use the original autoload file if it exists.
+ try {
+	 require_once dirname(__DIR__) . '/Wordpress-deatcore/vendor/autoload.php';
+ } catch (Exception $e) {
+	 // In case of an exception, use load an alternative path to autoload file
+	 require_once dirname(__DIR__) . '/vendor/autoload.php';
+ }
+ 
+ // Verifying that the WORDPRESS_ENV variable is set
+ $wordpressEnv = $_ENV['WORDPRESS_ENV'] ?? '';
+ 
+ // Path to .env file
+ $dotenvPath = ($wordpressEnv !== 'development') 
+	 ? __DIR__
+	 : __DIR__ . '/Wordpress-deatcore';
+ 
+ // Path to autoload file
+ $autoloadPath = ($dotenvPath === __DIR__) 
+	 ? '/vendor/autoload.php' 
+	 : '/Wordpress-deatcore/vendor/autoload.php';
+ 
+ // Creating instance Dotenv
+ $dotenv = Dotenv::createImmutable($dotenvPath);
+ 
+ // Loading .env file
+ $dotenv->load();
 
 // ** Database settings - You can get this info from your web host ** //
 /** The name of the database for WordPress */
